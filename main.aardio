@@ -1,150 +1,71 @@
-import chrome.app;
-import fsys.environment;
-//读写ini文件
-import console;
-import fsys.ini;
-
-import process;
+//RUNAS//
+import iniHosts;
+import fsys.hosts;
 import chrome.path;
-import winex
+import chrome.app;
+import process;
+import winex;
 
+var app = chrome.app();  
 
-
-var app = chrome.app();
-
-
-var file = fsys.environment.expand("%SystemRoot%\System32\drivers\etc\hosts") //hosts 文件路径
-var configPath = "\res\config.ini"; // 配置文件
-
- //更新系统配置
-var  updateHosts = function(){
-    	var content = "";
-		var ini=fsys.ini(configPath) //配置文件
-		for section in ini.eachSection() { 
-			if(section.status=="on"){
-			  content +=  string.unhex(section.hosts) + '\r\n' //16进转字符串
-			}
-    	}
-    	string.save(file, content)
-    }
-/*
-在下面的external对象中指定允许chrome中使用JS直接调用的函数
-在网页中直接引用"/aardio.js"下面的external 会自动转换为js中的aardio对象.
-"/aardio.js"是由 aardio虚拟的JS文件(不用自己准备这个文件)。
-*/
+//external对象定义的函数在Chrome中通过aardio.js可以直接调用
 app.external = {
-    
-    //加载一个页面完成会触发这个事件(要求引用了"/aardio.js")
-    onLoadUrl = function(url){
-        
-        //接收js函数的返回值
-		app.callback("hello",function(hSocket,result,err){
-			app.msgbox(result : err,"调用js的hello函数以后返回值了");
-	    })
-
-        //调用JS函数
-        app.survey("hello","aardio");
-    } 
-   
-    //获取hosts
-    hosts = function(){
-        return string.load(file)
-    }
-    //手动刷新dns缓存
-    clearCache = function(){
-        var prc = process(chrome.path())
+	
+	//获取hosts
+	loadSystemHostText = function(){ 
+		return fsys.hosts.loadText();
+	}
+	
+	//手动刷新dns缓存
+	clearDnsCache = function(){
+		fsys.hosts.flushDns();
+		
+		var prc = process(chrome.path())
 		var hwnd = winex.waitEnabled(,,,,prc.id)
 		win.delay(500)
-        key.combine("CTRL","SHIFT","DELETE") 
-        win.delay(1000)
-        //key.repeat("TAB",8)
-        //win.delay(500)
-        key.repeat("ENTER",2)
-        win.delay(1000)
-        key.combine("ALT","F4")
- 
-        return io.popen("ipconfig /flushdns","r").read(-1)
-    }
-    //新建
-    create = function(name){
-        var ini=fsys.ini(configPath) //配置文件
-		//读取小节对象
-		sec = ini.getSection(name)
-		sec.status = "on"
-		sec.hosts = "# " + name
-		sec.name = name
-		sec.save()
-		return  "create ok"
-    }
-    //获取全部配置
-    getConfig = function(){
-        var tab = {}
-        //如果不存在，则创建一个系统备份
-        if(io.exist(configPath)==null){
-            var ini=fsys.ini(configPath) //配置文件
-        	//读取小节对象
-			sec = ini.getSection("备份hosts")
-			sec.status = "on"
-			sec.hosts = string.hex(string.load(file)) // 转16进制
-			sec.name = "备份hosts"
-			sec.save()
-			sec.hosts = string.unhex(sec.hosts)
-			table.push(tab,sec)
-    	}else{
-    		var ini=fsys.ini(configPath) //配置文件
-    		for section in ini.eachSection() { 
-    			section.hosts = string.unhex(section.hosts) //16进转字符串
-    			table.push(tab,section)
-           }
-    	}
-    	return tab;
-    }
-    //更新
-    update = function(oldName,newName,status,data){
-    	var ini=fsys.ini(configPath) //配置文件
-    	if(oldName != newName){
-    		//先删除
-    		ini.write(oldName,null,)
-    	}
-    	
-		//读取小节对象
-		sec = ini.getSection(newName)
-		sec.status = status
-		sec.hosts = string.hex(data) // 转16进制
-		sec.name = newName
-		sec.save()
-		updateHosts()
-		return  "update ok"
-    }
-   
-    
-    //删除
-    del = function(name){
-    	var ini=fsys.ini(configPath) //配置文件
-		ini.write(name,null)
-		updateHosts()
-		return  "del ok"
-    }
+		key.combine("CTRL","SHIFT","DELETE") 
+		win.delay(1000) 
+		key.repeat("ENTER",2)
+		win.delay(1000)
+		key.combine("ALT","F4")  
+		return true;
+	}
+	
+	//新建配置
+	createSection = function(name){
+		return  iniHosts().createSection(name);
+	}
+	
+	//删除配置
+	delSection = function(name){ 
+		return  iniHosts().delSection(name);
+	}
+	
+	//获取全部配置
+	getAllSections = function(){ 
+		return  iniHosts().getAllSections();
+	}
+	
+	//更新
+	updateSection = function(oldName,newName,status,data){
+		return  iniHosts().updateSection(oldName,newName,status,data);
+	}
+}
+	
+app.onError = function($hSocket,err){
+	errput(err,"chrome/rpc error");
 }
 
-//WebSocke/RPC中遇到的错误都会触发这个函数,可以在这里自定义错误处理方式
-app.ws.onError = function(hSocket,err){
-	errput(err,"chrome/rpc error");//当然也可以在 global.onError 里自定义全部的错误信息怎么显示
+var url = "/web-ui/index.aardio" 
+if(_STUDIO_INVOKED  ){
+	import web.rest.client;
+	if( web.rest.client().api("http://localhost:8080/web-ui/",,"hosts切换助手").get() ){
+		//如果在前端项目里执行了 npm run dev 下面的调试URL就是可用状态
+		url = "http://localhost:8080/web-ui/";	
+	} 
 }
 
-var rs
-var err
-//正式的启动chrome进程，aardio会自动把下面的文件转换为服务端请求
-if( !_STUDIO_INVOKED ){
-    rs,err = app.start("/res/index.aardio");
-}else{
-    rs,err = app.start("http://localhost:8080/res/");
-}
-if(err){
-	win.msgbox(err,"error")
-}
-
-//网页中可以调用 aardio.quit() 退出,也可以直接关闭chrome窗口退出
+app.start(url);
 win.loopMessage();
 
-  
+	

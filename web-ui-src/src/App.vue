@@ -75,14 +75,9 @@
 </template>
 
 <script>
-// 开发模式 手动引入aardio，编译后aardio.js 中的端口是自动生成的
-if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line no-unused-vars
-  const aardio = require('./plugins/aardio.js');
-}
-
 // language js
 import 'codemirror/mode/ttcn-cfg/ttcn-cfg.js';
+import aardio from 'aardio';
 
 export default {
   name: 'AppHosts',
@@ -137,7 +132,7 @@ export default {
       // 获取系统配置
       setTimeout(() => {
         // eslint-disable-next-line no-undef
-        aardio.hosts().then(data => {
+        aardio.loadSystemHostText().then(data => {
           this.systemCode = data;
           this.code = data;
         });
@@ -147,7 +142,7 @@ export default {
       // 获取全部配置
       setTimeout(() => {
         // eslint-disable-next-line no-undef
-        aardio.getConfig().then(data => {
+        aardio.getAllSections().then(data => {
           if (data.length) {
             for (const item of data) {
               item.status = item.status === 'on';
@@ -161,7 +156,7 @@ export default {
     },
     clearCache() {
       // eslint-disable-next-line no-undef
-      aardio.clearCache().then(rs => {
+      aardio.clearDnsCache().then(rs => {
         this.$notify({ title: '操作成功', message: '已完成清chrome缓存' });
       });
     },
@@ -188,7 +183,7 @@ export default {
         if (this.activeIndex !== '0' && item.name === this.activeIndex) {
           item.hosts = this.code;
           // eslint-disable-next-line no-undef
-          aardio.update(
+          aardio.updateSection(
             item.name,
             item.name,
             item.status === true ? 'on' : 'off',
@@ -211,7 +206,7 @@ export default {
       this.$refs['dataForm'].validate(valid => {
         if (valid) {
           // eslint-disable-next-line no-undef
-          aardio.create(this.temp.name);
+          aardio.createSection(this.temp.name);
           this.config.push({
             name: this.temp.name,
             status: true,
@@ -254,7 +249,7 @@ export default {
     // 修改状态
     updateStatus(item) {
       // eslint-disable-next-line no-undef
-      aardio.update(
+      aardio.updateSection(
         item.name,
         item.name,
         item.status === true ? 'on' : 'off',
@@ -265,7 +260,7 @@ export default {
       this.$confirm('是否要删除: ' + item.name + '？', '操作确认')
         .then(() => {
           // eslint-disable-next-line no-undef
-          aardio.del(item.name);
+          aardio.delSection(item.name);
           const i = this.config.indexOf(item);
           this.config.splice(i, 1);
           this.activeIndex = '0';
@@ -276,7 +271,7 @@ export default {
 };
 </script>
 
- <style type="text/css">
+<style type="text/css"  >
 html,
 body,
 #app,

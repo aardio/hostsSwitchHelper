@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project ver="10" name="Hosts切换助手" libEmbed="true" icon="res\favicon.ico" ui="win" output="Hosts切换助手.exe" CompanyName="手盟网络" FileDescription="Hosts切换助手 412530435@qq.com" LegalCopyright="Copyright (C) sherman 2019" ProductName="Hosts切换助手" InternalName="switchHosts" FileVersion="0.0.0.11" ProductVersion="0.0.0.11" publishDir="/Publish/" dstrip="false">
+<project ver="10" name="Hosts切换助手" libEmbed="true" icon="\web-ui\favicon.ico" ui="win" output="Hosts切换助手.exe" CompanyName="手盟网络" FileDescription="Hosts切换助手 412530435@qq.com" LegalCopyright="Copyright (C) sherman 2019" ProductName="Hosts切换助手" InternalName="switchHosts" FileVersion="1.0.0.0" ProductVersion="1.0.0.0" publishDir="\dist\" dstrip="false" local="false">
 	<file name="main.aardio" path="main.aardio" comment="main.aardio"/>
-	<folder name="Js渲染进程" path="res" embed="true">
-		<file name="favicon.ico" path="res\favicon.ico" comment="窗口图标"/>
-		<file name="index.aardio" path="res\index.aardio" comment="res\index.aardio"/>
+	<folder name="前端" path="web-ui" embed="true" local="true">
+		<file name="favicon.ico" path="web-ui\favicon.ico" comment="web-ui\favicon.ico"/>
+		<file name="index.aardio" path="web-ui\index.aardio" comment="web-ui\index.aardio"/>
 	</folder>
+	<folder name="前端源码 (请勿同步)" path="web-ui-src" embed="false" comment="目录" local="false"/>
 </project>

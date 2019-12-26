@@ -1,0 +1,6 @@
+web-ui-src/node_modules
+web-ui-src/.cache
+web-ui-src/package-lock.json
+web-ui-src/yarn.lock
+.build
+dist
